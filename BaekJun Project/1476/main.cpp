@@ -9,9 +9,9 @@ int main() {
 	int e, s, m;
 	cin >> e >> s >> m;
 
-	year = 420 * e * s + 285 * e * m + 532 * m * s;
+	while (++year) if (!((year - e) % 15) && !((year - s) % 28) && !((year - m) % 19)) break;
 
-	cout << year % (e * s * m) << endl;
+	cout << year;
 
 	return 0;
 
