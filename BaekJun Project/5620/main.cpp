@@ -45,7 +45,7 @@ int main() {
 
 	for (int i = 1; i < n; i++) {
 
-		int d = distance(vert[i - 1], vert[i]);;
+		int d = distance(vert[i - 1], vert[i]);
 
 		if (min > d) min = d;
 

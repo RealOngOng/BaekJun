@@ -1,6 +1,6 @@
 #include <iostream>
 #include <limits.h>
-#include <time.h>
+#include <algorithm>
 
 #define WHITE 0
 #define BLACK 1
@@ -15,6 +15,8 @@ typedef struct Area {
 
 	Vector2 pos1, pos2;
 
+	int color;
+
 	bool isCollision(Vector2 vert) {
 
 		return !(vert.x < pos1.x || vert.x > pos2.x || vert.y < pos1.y || vert.y > pos2.y);
@@ -22,53 +24,24 @@ typedef struct Area {
 	}
 	int GetArea() {
 
-		return (pos2.x - pos1.x) * (pos2.y - pos1.y);
+		return std::abs((pos2.x - pos1.x) * (pos2.y - pos1.y));
+
+	}
+
+	void print() {
+
+		std::cout << "(" << pos1.x << ", " << pos1.y << ") - (" << pos2.x << ", " << pos2.y
+			<< ") " << ((color) ? "BLACK" : "WHITE") << "\n";
 
 	}
 
 };
 
-typedef struct Node {
+int node_count;
 
-	Area area;
-	int color;
-	int id = 0;
-	bool leaf = true;
-
-	Node *left = NULL, *right = NULL;
-
-	void Print() {
-
-		std::cout << "(" << area.pos1.x << ", " << area.pos1.y << ") - ("
-			<< area.pos2.x << ", " << area.pos2.y << ") " << ((color == WHITE) ? "WHITE" : "BLACK") << "\n";
-
-	}
-
-};
-
-Node node[60010];
-Vector2 vec[30010];
-
-Node* CreateNode(int id, Vector2 pos1, Vector2 pos2, int color) {
-
-	Node *n = new Node;
-
-	n->area.pos1 = pos1;
-	n->area.pos2 = pos2;
-	n->color = color;
-	n->id = id;
-
-	node[id] = *n;
-
-	return n;
-
-}
-
-clock_t start, end;
+Area a[60010];
 
 int main() {
-
-	start = clock();
 
 	std::ios::sync_with_stdio(false);
 	std::cin.tie(NULL); std::cout.tie(NULL);
@@ -76,104 +49,64 @@ int main() {
 	int w, h, n;
 	std::cin >> w >> h >> n;
 
-	node[0] = *CreateNode(0, { 0, 0 }, { w, h }, WHITE);
+	int max = -INT_MAX, min = INT_MAX;
 
-	Node *target = NULL;
+	Area in = { {0, 0}, {w, h}, WHITE };
 
-	int count = n;
-	int i = 1;
+	a[0] = in;
 
-	for (int j = 0; j < n; j++) {
+	//node_count++;
 
-		int x, y;
-		std::cin >> x >> y;
+	for (int i = 0; i < n; i++) {
 
-		vec[j] = { x, y };
+		int x, y; std::cin >> x >> y;
 
-	}
+		int innum = 0;
 
-	end = clock();
+		for (innum = 0; innum < node_count; innum++)
+			if (a[innum].isCollision({ x, y })) break;
 
-	std::cout << "time : " << (double)(end - start) << "\n";
+		Area a1, a2;
 
-	start = clock();
+		a1 = a2 = a[innum];
 
-	int cc = 0;
+		if (a[innum].color == WHITE) {
 
-	for (int j = 0; j < n; j++) {
+			a1.pos1.y = y, a2.pos2.y = y;
+			a1.color = a2.color = BLACK;
 
-		int x = vec[j].x, y = vec[j].y;
+			//a1.print(), a2.print();
 
-		target = &node[0];
-
-		while (target->left) {
-
-			cc++;
-
-			//if (target->left->area.isCollision({ x, y }))
-			//	target = target->left;
-			//else
-			//	target = target->right;
-
-			if (target->left->area.isCollision({ x, y }))
-				target = target->left;
-			else if (target->right->area.isCollision({ x, y }))
-				target = target->right;
-			else
-				break;
-
-		}
-
-		node[target->id].leaf = false;
-		//node[target->id].Print();
-
-		if (target->color == WHITE) {
-
-			target->left = CreateNode(i++, target->area.pos1, { target->area.pos2.x, y }, BLACK);
-			target->right = CreateNode(i++, { target->area.pos1.x, y }, target->area.pos2, BLACK);
+			a[innum] = a1, a[++node_count] = a2;
 
 		}
 		else {
 
-			target->left = CreateNode(i++, target->area.pos1, { x, target->area.pos2.y }, WHITE);
-			target->right = CreateNode(i++, { x, target->area.pos1.y }, target->area.pos2, WHITE);
+			a1.pos2.x = x, a2.pos1.x = x;
+			a1.color = a2.color = WHITE;
+
+			//a1.print(), a2.print();
+
+			a[innum] = a1, a[++node_count] = a2;
 
 		}
 
 	}
 
-	end = clock();
-
-	std::cout << "time : " << (double)(end - start) << "\n";
-
-	start = clock();
-
-	std::cout << "cc : " << cc << "\n";
-
 	//std::cout << "\n";
 
-	int max = -INT_MAX, min = INT_MAX;
+	for (int i = 0; i < node_count + 1; i++) {
 
-	for (int i = 0; i < 2 * n + 1; i++) {
+		//a[i].print();
 
-		if (node[i].leaf) {
+		int d = a[i].GetArea();
 
-			int d = node[i].area.GetArea();
-
-			//node[i].Print();
-
-			if (d > max) max = d;
-			if (d < min) min = d;
-
-		}
+		max = std::max(d, max);
+		min = std::min(d, min);
 
 	}
 
 	std::cout << max << " " << min << "\n";
-
-	end = clock();
-
-	std::cout << "time : " << (double)(end - start) << "\n";
 
 	return 0;
 
