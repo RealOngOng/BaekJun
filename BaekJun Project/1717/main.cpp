@@ -1,48 +1,43 @@
-#include <iostream>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-#define MAX 1000001
+int p[1000001];
 
-int graph[MAX];
+int find(int a) {
 
-int findParent(int x) {
+	if (p[a] < 0) return a;
 
-	int parent = graph[x];
-
-	if (x == parent) return x;
-
-	return graph[x] = findParent(parent);
+	return p[a] = find(p[a]);
 
 }
 
-void merge(int x, int y) {
+void merge(int a, int b) {
 
-	x = findParent(x); y = findParent(y);
+	a = find(a);
+	b = find(b);
 
-	if (x != y) graph[y] = x;
+	if (a != b) p[a] = b;
 
 }
 
 int main() {
 
-	ios_base::sync_with_stdio(false);
-	cout.tie(NULL);
-	cin.tie(NULL);
+	ios::sync_with_stdio(0);
+	cin.tie(0), cout.tie(0);
 
-	int n, m;
-	cin >> n >> m;
+	memset(p, -1, sizeof(p));
 
-	for (int i = 0; i <= n; i++) graph[i] = i;
+	int n, m; cin >> n >> m;
 
-	int a, b;
-	for (int i = 0; i < m; i++) {
+	while (m--) {
 
-		bool type = false;
-		cin >> type >> a >> b;
+		int a, b, c; cin >> a >> b >> c;
 
-		if (!type) merge(a, b);
-		else cout << ((findParent(a) == findParent(b)) ? "YES" : "NO") << "\n";
+		if (a == 0)
+			merge(b, c);
+		else
+			cout << ((find(b) == find(c)) ? "YES" : "NO") << "\n";
 
 	}
 

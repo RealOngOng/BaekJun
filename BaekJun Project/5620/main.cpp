@@ -1,57 +1,62 @@
-#include <iostream>
-#include <utility>
-#include <algorithm>
-#include <math.h>
-#include <limits.h>
+#include <bits/stdc++.h>
 
-typedef std::pair<int, int> Vector2;
-typedef std::pair<Vector2, Vector2> Line;
-typedef std::pair<int, Line> Dst;
+using namespace std;
 
-int n;
-Vector2 *vert;
+typedef struct Vector2 {
 
-int distance(Vector2 vec1, Vector2 vec2) { return std::pow(vec1.first - vec2.first, 2) + std::pow(vec1.second - vec2.second, 2); }
+	int x, y;
+
+};
+
+int distance(Vector2 vec1, Vector2 vec2){return (vec1.x - vec2.x) * (vec1.x - vec2.x) + (vec1.y - vec2.y) * (vec1.y - vec2.y);}
 
 int main() {
 
-	std::cin >> n;
+	ios::sync_with_stdio(false);
+	cin.tie(0), cout.tie(0);
 
-	vert = new Vector2[n + 1];
+	int n; cin >> n;
+
+	vector<Vector2> vert;
 
 	for (int i = 0; i < n; i++) {
 
-		int a, b; std::cin >> a >> b;
-		vert[i] = { a, b };
+		int a, b; cin >> a >> b;
+		vert.push_back({ a, b });
 
 	}
 
-	std::sort(vert, vert + n);
+	std::sort(vert.begin(), vert.end(),
+			  [](const Vector2& vec1, const Vector2& vec2) -> bool {
+		if (vec1.x != vec2.x) return vec1.x < vec2.x;
+		return vec1.y < vec2.y;
+	});
 
-	int min = INT_MAX;
+	int dst = 0x3f3f3f3f;
 
 	for (int i = 1; i < n; i++) {
 
 		int d = distance(vert[i - 1], vert[i]);
 
-		if (min > d) min = d;
+		dst = min(dst, d);
 
 	}
 
-	std::sort(vert, vert + n, 
+	std::sort(vert.begin(), vert.end(),
 			  [](const Vector2& vec1, const Vector2& vec2) -> bool {
-		return (vec1.second < vec2.second);
+		if (vec1.y != vec2.y) return vec1.y < vec2.y;
+		return vec1.x < vec2.x;
 	});
 
 	for (int i = 1; i < n; i++) {
 
 		int d = distance(vert[i - 1], vert[i]);
 
-		if (min > d) min = d;
+		dst = min(dst, d);
 
 	}
 
-	std::cout << min << "\n";
+	cout << dst << "\n";
 
 	return 0;
 

@@ -1,95 +1,131 @@
 #include <iostream>
 #include <math.h>
 
-#define MAX 101
-
 typedef struct Vector3 {
 
 	double x, y, z;
 
 	Vector3 operator+(const Vector3& vec) { return { x + vec.x, y + vec.y, z + vec.z }; }
-	Vector3 operator-(const Vector3& vec) { return { x - vec.x, y - vec.y, z - vec.z }; }
-	Vector3 operator*(double d) { return { x * d, y * d, z * d }; }
-	Vector3 operator/(double d) { return { x / d, y / d, z / d }; }
-
-	Vector3 normalize() {
-
-		double sum = std::sqrt(x * x + y * y + z * z);
-
-		return { x / sum, y / sum, z / sum };
-
-	}
-
-	void debug() {
-
-		std::cout << "(" << x << ", " << y << ", " << z << ")" << "\n";
-
-	}
+	Vector3 operator-(const Vector3& vec) { return { x + vec.x, y + vec.y, z + vec.z }; }
+	Vector3 operator*(double ratio) { return { x * ratio, y * ratio, z * ratio }; }
 
 };
 
 typedef struct Sphere {
 
 	Vector3 pos;
-	double radius;
+	double r;
 
 };
 
-double distance(Vector3 vec1, Vector3 vec2) {
+typedef struct Equation {
 
-	double dst = std::sqrt(
-		std::pow(vec1.x - vec2.x, 2) + std::pow(vec1.y - vec2.y, 2) + std::pow(vec1.z - vec2.z, 2));
+	double a, b, c;
 
-	return std::round(dst * 1000) / 1000;
+};
+
+typedef struct Solution {
+
+	double s1, s2;
+
+};
+
+bool isDiscriminant(double a, double b, double c) {
+
+	return ((b * b) - 4 * a * c >= 0);
 
 }
 
-Vector3 raser;
-Sphere sphere[MAX];
+Equation getEquation(Vector3 pos, Vector3 dir, Sphere sph) {
+
+	Equation e;
+
+	e.a = dir.x + dir.y + dir.z;
+	e.b = 2 * (dir.x * (pos.x - sph.pos.x) + dir.y * (pos.y - sph.pos.y) + dir.z * (pos.z - sph.pos.z));
+	e.c = pos.x * pos.x + pos.y * pos.y + pos.z * pos.z
+		+ sph.pos.x * sph.pos.x + sph.pos.y * sph.pos.y + sph.pos.z * sph.pos.z
+		- 2 * pos.x * sph.pos.x - 2 * pos.y * sph.pos.y - 2 * pos.z * sph.pos.z
+		- sph.r * sph.r;
+
+	return e;
+
+}
+
+double dot(Vector3 vec1, Vector3 vec2) {
+
+	return (vec1.x * vec2.x) + (vec1.y * vec2.y);
+
+}
+
+Vector3 Reflact(Vector3 dir, Vector3 normal) {
+
+	return dir +  normal * 2 * dot(dir * -1, normal);
+
+}
+
+Vector3 Normalize(Vector3 vec) {
+
+	double temp = std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+
+	return { vec.x / temp, vec.y / temp, vec.z / temp };
+
+}
+
+Solution rootFomula(Equation e) {
+
+	double root = std::sqrt(e.b * e.b - 4 * e.a * e.c);
+
+	return { (-e.b + root) / (2 * e.a), (-e.b - root) / (2 * e.a) };
+
+}
 
 int main() {
 
-	int n; std::cin >> n;
+	//int t; std::cin >> t;
 
-	std::cin >> raser.x >> raser.y >> raser.z;
-	raser = raser.normalize();
+	//while (t--) {
 
-	for (int i = 0; i < n; i++) {
+	//	int n; std::cin >> n;
 
-		double x, y, z, r; std::cin >> x >> y >> z >> r;
-		sphere[i] = { {x, y, z}, r };
+	//	Vector3 dir, pos = {0, 0, 0}; std::cin >> dir.x >> dir.y >> dir.z;
 
-	}
+	//	Sphere *sph = new Sphere[n];
 
-	raser.debug();
+	//	for (int i = 0; i < n; i++) 
+	//		std::cin >> sph[i].pos.x >> sph[i].pos.y >> sph[i].pos.z >> sph[i].r;
 
-	double result = 0;
-	double low = 0, high = 100;
+	//	while (true) {
 
-	while (true) {
+	//	}
 
-		double mid = (low + high) * 0.5;
+	//}
 
-		double dst = distance(sphere[2].pos, raser * mid);
+	Vector3 pos = { 3, 0, 0 }, dir = { 2, 1, 0 };
+	Sphere sph = { {1, 1, 0}, 3 };
 
-		if (dst == 5) break;
+	//dir = Normalize(dir);
 
-		std::cout << dst << "\n";
-		(raser * mid).debug();
+	Equation e = getEquation(pos, dir, sph);
 
-		if (dst >= sphere[2].radius) {
+	Solution s = rootFomula(e);
 
-			result = mid;
-			high = mid;
+	std::cout << s.s1 << ", " << s.s2 << "\n";
 
-		}
-		else
-			low = mid;
+	Vector3 hit[2] = 
+	{ {pos.x + dir.x * s.s1, pos.y + dir.y * s.s1, pos.z + dir.z * s.s1}, 
+	{pos.x + dir.x * s.s2, pos.y + dir.y * s.s2, pos.z + dir.z * s.s2} };
+	
+	std::cout << hit[0].x << ", " << hit[0].y << ", " << hit[0].z << "\n";
+	std::cout << hit[1].x << ", " << hit[1].y << ", " << hit[1].z << "\n";
 
-	}
+	Vector3 normal[2] = 
+	{ Normalize(hit[0] - sph.pos) , Normalize(hit[1] - sph.pos) };
 
-	std::cout << result << "\n";
+	std::cout << normal[0].x << ", " << normal[0].y << ", " << normal[0].z << "\n";
+	std::cout << normal[1].x << ", " << normal[1].y << ", " << normal[1].z << "\n";
+	std::cout << dir.x << ", " << dir.y << ", " << dir.z << "\n";
 
 	return 0;
 
 }
+

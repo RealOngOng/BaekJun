@@ -1,31 +1,44 @@
-#include <iostream>
+#include <bits/stdc++.h>
 
-#define MOD 1000000007
+using namespace std;
+typedef long long ll;
 
-int main() {
+const ll MOD = 1e9 + 7;
 
-	std::ios::sync_with_stdio(false);
-	std::cin.tie(NULL); std::cout.tie(NULL);
+struct SegmentTree
+{
+	int n;
+	vector<int> arr, seg;
+	SegmentTree(vector<int>& vec)
+	{
+		Init(vec);
+	}
 
-	int n; std::cin >> n;
+	void Init(vector<int>& vec)
+	{
+		n = vec.size();
+		arr.resize(n);
+		seg.resize(4 * n);
+		for (int i = 0; i < n; i++)
+			arr[i] = vec[i];
+	}
 
-	long long *dst = new long long[n + 1];
-	int *arr = new int[n + 1];
+	int SetTree(int num, int s, int e)
+	{
+		if (s == e)
+			return seg[num] = arr[s];
+		return seg[num] = SetTree(2 * num, s, (s + e) / 2) +
+			SetTree(2 * num + 1, (s + e) / 2 + 1, e);
+	}
+	void SetTree()
+	{
+		SetTree(1, 0, n - 1);
+	}
 
-	for (int i = 1; i <= n; i++)std::cin >> arr[i];
 
-	long long score = 1;
+};
 
-	arr[0] = dst[0] = 0;
-
-	for (int i = 1; i <= n - 1; i++)
-		dst[i] = dst[i - 1] + (arr[i + 1] - arr[i]) * i, score = (score * dst[i]) % MOD;
-
-	for (int i = 1; i <= n - 1; i++)
-		std::cout << dst[i] << "\n";
-
-	std::cout << score % MOD << "\n";
-
+int main()
+{
 	return 0;
-
 }

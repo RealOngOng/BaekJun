@@ -1,23 +1,20 @@
-#include <iostream>
-#include <list>
+#include <bits/stdc++.h>
 
 #define MAX 9
 
 int Key[MAX], check[MAX];
-std::list<int> _;
-
-__inline void TrueCheck() { for (int i = 0; i < MAX; i++) check[i] = true; }
+std::vector<int> vec;
 
 int main() {
 
 	int sum = 0;
 
 	for (int i = 0; i < MAX; i++)
-		std::cin >> Key[i], sum += Key[i];
+		scanf("%d", Key + i), sum += Key[i];
 
 	for (int i = 0; i < MAX; i++) {
 
-		TrueCheck();
+		memset(check, true, sizeof(check));
 
 		for (int j = i + 1; j < MAX; j++) {
 
@@ -26,22 +23,22 @@ int main() {
 			if (result == 100) {
 
 				check[i] = check[j] = false;
-				goto exit;
+
+				for (int i = 0; i < MAX; i++)
+					if (check[i])vec.push_back(Key[i]);
+
+				sort(vec.begin(), vec.end());
+
+				for (auto num : vec)
+					printf("%d\n", num);
+
+				exit(0);
 
 			}
 
 		}
 
 	}
-
-	exit:
-
-	for (int i = 0; i < MAX; i++)
-		if (check[i])_.push_back(Key[i]);
-
-	_.sort();
-
-	for (auto num : _) std::cout << num << "\n";
 
 	return 0;
 

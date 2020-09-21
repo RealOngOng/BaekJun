@@ -1,7 +1,6 @@
-#include <iostream>
-#include <vector>
+#include <bits/stdc++.h>
 
-#define MAX 16
+using namespace std;
 
 typedef struct Vector2 {
 
@@ -9,136 +8,160 @@ typedef struct Vector2 {
 
 };
 
-typedef std::vector<std::vector<bool>> Area;
+typedef struct Result {
 
-std::vector<Area> results;
+	int count, last;
+	bool visit[15][15];
 
-int dx[5] = { 0, 0, 1, 0, -1 };
-int dy[5] = { 0, 1, 0, -1, 0 };
+};
 
-int w, h;
+int n, m;
+bool field[15][15], visit[15][15];
 
-void PrintArea(Area &area) {
+int dx[4] = { -1, 1, 0, 0 };
+int dy[4] = { 0, 0, -1, 1 };
 
-	for (int i = 0; i < w; i++) {
+int fm = 1e9;
 
-		for (int j = 0; j < h; j++)
-			std::cout << area[i][j] << " ";
+vector<Result> route;
 
-		std::cout << "\n";
+bool isOut(Vector2 pos) { return (pos.x < 0 || pos.y < 0 || pos.x >= m || pos.y >= n); }
+
+void Flip(Vector2 pos) {
+
+	field[pos.x][pos.y] = !field[pos.x][pos.y];
+
+	for (int i = 0; i < 4; i++) {
+
+		Vector2 front = { pos.x + dx[i], pos.y + dy[i] };
+
+		if (isOut(front)) continue;
+
+		field[front.x][front.y] = !field[front.x][front.y];
 
 	}
 
 }
 
-bool isGood(Area &field) {
+// 0 뒤집으면 안됨, 1 무조건 뒤집어야됨 2 둘 중에 상관없음 
+int isFlip(Vector2 pos) {
 
-	int score = 0;
+	if (pos.x == 0) return 2;
 
-	for (int i = 0; i < w; i++)
-		for (int j = 0; j < h; j++)
-			score += field[i][j];
-
-	return (score == 0);
+	return field[pos.x - 1][pos.y];
 
 }
 
-std::vector<Vector2> FindReverse(Area &field, Area &check) {
+bool isOk() {
 
-	std::vector<Vector2> find;
+	int sum = 0;
 
-	for(int i=0; i < w; i++)
-		for (int j = 0; j < h; j++) {
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < n; j++)
+			sum += field[i][j];
 
-			if (check[i][j]) continue;
+	return (sum == 0);
 
-			int score[2];
+}
 
-			Vector2 pos = { i, j };
+Vector2 IdxToVector2(int idx) { return { idx / n, idx % n }; }
 
-			for (int q = 0; q < 5; q++) {
+void backtrack(int idx, int count) {
 
-				Vector2 npos = { pos.x + dx[i], pos.y + dy[i] };
+	if (count > fm) return;
 
-				if (npos.x < 0 || npos.y < 0 || npos.x >= w || npos.y >= h) continue;
+	if (idx == n * m) {
 
-				score[field[npos.x][npos.y]]++;
+		if (!isOk()) return;
 
-			}
+		if (count <= fm) {
 
-			if (score[0] <= score[1]) find.push_back(pos);
+			Result r; r.count = count;
+
+			int last = 0, q = 0;
+
+			for (int i = 0; i < m; i++)
+				for (int j = n - 1; j >= 0; j--) {
+
+					r.visit[i][j] = visit[i][j];
+					if (r.visit[i][j])
+						last = q;
+
+					q++;
+
+				}
+
+			r.last = last;
+
+			route.push_back(r);
+			fm = count;
 
 		}
 
-	return find;
-
-}
-
-void func(Area field, Area check);
-
-void Reverse(Area field, Area check, Vector2 pos) {
-
-	//PrintArea(field);
-
-	check[pos.x][pos.y] = true;
-
-	for (int i = 0; i < 5; i++) {
-
-		Vector2 npos = { pos.x + dx[i], pos.y + dy[i] };
-
-		if (npos.x < 0 || npos.y < 0 || npos.x >= w || npos.y >= h) continue;
-
-		if (check[npos.x][npos.y]) continue;
-
-		field[npos.x][npos.y] = !field[npos.x][npos.y];
-
-	}
-
-	func(field, check);
-
-}
-
-void func(Area field, Area check) {
-
-	if (isGood(field)) {
-
-		results.push_back(check);
 		return;
 
 	}
 
-	std::vector<Vector2> find = FindReverse(field, check);
+	Vector2 pos = IdxToVector2(idx);
 
-	int count = find.size();
+	int r = isFlip(pos);
 
-	for (int i = 0; i < count; i++)
-		Reverse(field, check, find[i]);
+	if (r == 0) backtrack(idx + 1, count);
+	else if (r == 1) {
+
+		visit[pos.x][pos.y] = true;
+		Flip(pos);
+		backtrack(idx + 1, count + 1);
+		visit[pos.x][pos.y] = false;
+		Flip(pos);
+
+	}
+	else if (r == 2) {
+
+		backtrack(idx + 1, count);
+
+		visit[pos.x][pos.y] = true;
+		Flip(pos);
+		backtrack(idx + 1, count + 1);
+		visit[pos.x][pos.y] = false;
+		Flip(pos);
+
+	}
 
 }
 
 int main() {
 
-	Area field(MAX), check(MAX);
+	scanf("%d %d", &m, &n);
 
-	for (int i = 0; i < MAX; i++)
-		field[i].resize(MAX), check[i].resize(MAX);
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < n; j++)
+			scanf("%d", &field[i][j]);
 
-	std::cin >> w >> h;
+	backtrack(0, 0);
 
-	for (int i = 0; i < w; i++)
-		for (int j = 0; j < h; j++) {
+	if (route.size() == 0) printf("IMPOSSIBLE\n");
+	else {
 
-			int a; std::cin >> a;
-			field[i][j] = a;
+		sort(route.begin(), route.end(),
+			 [](const Result& r1, const Result& r2) -> bool {
+
+			if (r1.count != r2.count) return r1.count < r2.count;
+
+			return r1.last < r2.last;
+
+		});
+
+		for (int i = 0; i < m; i++) {
+
+			for (int j = 0; j < n; j++)
+				printf("%d ", route[0].visit[i][j]);
+
+			printf("\n");
 
 		}
 
-	func(field, check);
-
-	int count = results.size();
-
-	for (int i = 0; i < count; i++)
-		PrintArea(results[i]);
+	}
 
 	return 0;
 

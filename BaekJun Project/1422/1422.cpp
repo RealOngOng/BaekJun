@@ -1,81 +1,114 @@
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <string>
 
-using namespace std;
+typedef struct BigInteger {
 
-long long int list[1001], Sort[1001];
+	std::string num;
 
-void merge(int left, int right) {
+	void operator=(BigInteger bi) {
 
-	int mid = (left + right) / 2, i = left, j = mid + 1, k = left;
+		num = bi.num;
 
-	while (i <= mid && j <= right) Sort[k++] = (list[i] <= list[j]) ? list[i++] : list[j++];
+	}
+	void operator=(std::string str) {
 
-	if (i <= mid) for (int w = i; w <= mid; w++) Sort[k++] = list[w];
-	else for (int w = j; w <= right; w++) Sort[k++] = list[w];
+		num = str;
 
-	for (int w = left; w <= right; w++) list[w] = Sort[w];
+	}
+	bool operator<(BigInteger bi) {
 
-}
+		int sz1 = num.length(), sz2 = bi.num.length();
 
-void merge_sort(int left, int right) {
+		if (sz1 != sz2) return (sz1 < sz2);
 
-	if (left < right) {
+		bool min = false;
 
-		int mid = (left + right) / 2;
-		merge_sort(left, mid);
-		merge_sort(mid + 1, right);
-		merge(left, right);
+		for (int i = 0; i < sz1; i++) {
+
+			int n1 = num[i] - '0', n2 = bi.num[i] - '0';
+
+			if (n1 == n2) continue;
+
+			min = (n1 < n2);
+			break;
+
+		}
+
+		return min;
+
+	}
+	bool operator>(BigInteger bi) {
+
+		int sz1 = num.length(), sz2 = bi.num.length();
+
+		if (sz1 != sz2) return (sz1 > sz2);
+
+		bool max = false;
+
+		for (int i = 0; i < sz1; i++) {
+
+			int n1 = num[i] - '0', n2 = bi.num[i] - '0';
+
+			if (n1 == n2) continue;
+
+			max = (n1 > n2);
+			break;
+
+		}
+
+		return max;
 
 	}
 
-}
+};
 
-long long int min(long long int a, long long int b) { return (a > b) ? a : b; }
+BigInteger mergeNum(BigInteger bi1, BigInteger bi2) {
+
+	BigInteger bi;
+	bi.num = bi1.num + bi2.num;
+
+	return bi;
+
+}
 
 int main() {
 
-	int n, k;
-	cin >> k >> n;
+	int k, n; std::cin >> k >> n;
 
-	int w;
+	std::vector<BigInteger> arr(k);
+
+	int max = 0;
+
 	for (int i = 0; i < k; i++) {
 
-		cin >> w;
-		list[i] = w;
+		int input; std::cin >> input;
+
+		arr[i] = std::to_string(input);
+
+		max = std::max(max, input);
 
 	}
 
-	for (int i = k - 1; i < n; i++) list[i] = list[k - 1];
+	std::string max_str = std::to_string(max);
 
-	for (int i = 0; i < n; i++) cout << list[i] << endl;
+	for (int i = 0; i < n - k; i++) arr.push_back({ max_str });
 
-	cout << endl;
+	std::sort(arr.begin(), arr.end(),
+			  [](BigInteger c1, BigInteger c2) -> bool {
 
-	while (k--) {
+		BigInteger m1 = mergeNum(c1, c2),
+			m2 = mergeNum(c2, c1);
 
-		for (int i = 0; i < n; i += 2) {
+		return (m1 > m2);
 
-			string s1 = to_string(list[i]), s2 = to_string(list[i+1]);
+	});
 
-			string temp1 = s1 + s2, temp2 = s2 + s1;
+	for (int i = 0; i < n; i++)
+		std::cout << arr[i].num;
 
-			list[i] = min(stoi(temp1.c_str()), stoi(temp2.c_str()));
-
-		}
-
-		for (int i = 0; i < n - 1; i++) {
-
-			cout << list[i] << " ";
-
-		}
-
-		cout << endl;
-
-	}
-
-	cout << list[0] << endl;
+	std::cout << "\n";
 
 	return 0;
 

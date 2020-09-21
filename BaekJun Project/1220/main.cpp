@@ -1,173 +1,213 @@
 //#include <iostream>
-//#include <stdlib.h>
-//#include <utility>
+//#include <algorithm>
+//#include <set>
+//#include <map>
 //#include <vector>
+//#include <math.h>
+//#include <limits.h>
+//#include <queue>
 //
-//using namespace std;
+//#define MAX 2100000
 //
-//#pragma region Struct
+//#define UP 0
+//#define DOWN 1
+//#define LEFT 2
+//#define RIGHT 3
 //
-//typedef pair<int, int> Vector2;
-//typedef pair<Vector2, Vector2> Block;
+//#define INF INT_MAX
 //
-//__inline bool between(Vector2 _p, Vector2 _start, Vector2 _end) 
-//{
+//typedef long l;
 //
-//	return (_start.first <= _p.first && _p.first <= _end.second)
-//		&& (_start.first <= _p.second && _p.second <= _end.second);
+//typedef struct Vector2 {
 //
+//	int x, y;
+//
+//	Vector2 operator+(Vector2 vec) { return { x + vec.x, y + vec.y }; }
+//	Vector2 operator-(Vector2 vec) { return { x + vec.x, y + vec.y }; }
+//	Vector2 operator*(int ratio) { return { x * ratio, y * ratio }; }
+//
+//	bool operator==(Vector2 vec) { return ((x == vec.x) && (y == vec.y)); }
+//
+//};
+//
+//typedef struct Vertex {
+//
+//	Vector2 pos;
+//
+//	l num = INF;
+//
+//	l weight[4];
+//
+//};
+//
+//typedef struct Area {
+//
+//	Vector2 pos1, pos2;
+//
+//	int cost;
+//
+//};
+//
+//struct comp {
+//	bool operator()(const Vertex &a, const Vertex &b)
+//	{
+//		return a.num > b.num;
+//	}
+//};
+//
+//Vector2 dv[4] = { {0, 1}, {0, -1}, {-1, 0}, {1, 0} };
+//
+//Area area[1002];
+//
+//Vertex vert[2002][2002];
+//bool visit[2002][2002];
+//Vector2 start, end;
+//
+//std::map<int, int> xidx, yidx;
+//std::vector<int> xpos, ypos;
+//
+//int xpos_size, ypos_size;
+//
+//void SetNode(Vector2 pos, int dir, l value) {
+//
+//	Vector2 sub = pos + dv[dir];
+//
+//	if (sub.x < 0 || sub.y < 0 || sub.x >= xpos_size || sub.y >= ypos_size) {
+//
+//		vert[pos.x][pos.y].weight[dir] = -1;
+//		return;
+//
+//	}
+//
+//	vert[pos.x][pos.y].pos = pos;
+//	vert[pos.x][pos.y].weight[dir] = (std::abs(xpos[pos.x] - xpos[sub.x]) + std::abs(ypos[pos.y] - ypos[sub.y])) * value;
+//	
 //}
-//
-//__inline float distance(Vector2 _p1, Vector2 _p2) {return (_p1.first - _p2.first) * (_p1.first - _p2.first) + (_p1.second - _p2.second) * (_p1.second - _p2.second);}
-//
-//__inline bool inBlock(Block _b, Vector2 _vec1, Vector2 _vec2)
-//{
-//
-//	if ((_vec1.first == _b.first.first && _vec2.first == _b.first.first) ||
-//		(_vec1.first == _b.second.first && _vec2.first == _b.second.first) ||
-//		(_vec1.second == _b.first.second && _vec2.second == _b.first.second) ||
-//		(_vec1.second == _b.second.second && _vec2.second == _b.second.second)) return false;
-//
-//	return between(_vec1, _b.first, _b.second) && between(_vec2, _b.first, _b.second);
-//
-//}
-//
-//#pragma endregion
-//
-//#pragma region Method
-//
-//Vector2 cinVector2();
-//int H_Hueristic(Vector2);
-//
-//#pragma endregion
-//
-//Vector2 normalVector[4] = {
-//	Vector2(0, 1),
-//	Vector2(1, 0),
-//	Vector2(-1, 0),
-//	Vector2(0, -1)};
-//
-//Block* Blocks;
-//int* BlockPrice;
-//int BlockNum;
-//
-//Vector2 pos_start, pos_end;
-//
-//int Hueristic_G[8], Hueristic_H[8], route = 0;
 //
 //int main() {
 //
-//	#pragma region sync_false
+//	std::ios::sync_with_stdio(false);
+//	std::cout.tie(NULL); std::cin.tie(NULL);
 //
-//	ios::sync_with_stdio(false);
+//	//입력
+//	std::cin >> start.x >> start.y >> end.x >> end.y;
 //
-//	cin.tie(NULL);
-//	cout.tie(NULL);
+//	std::set<int> xorder, yorder;
 //
-//	#pragma endregion
+//	xorder.insert(start.x), xorder.insert(end.x);
+//	yorder.insert(start.y), yorder.insert(end.y);
 //
-//	#pragma region input
+//	int n;
+//	std::cin >> n;
 //
-//	pos_start = cinVector2(); pos_end = cinVector2();
+//	for (int i = 0; i < n; i++) {
 //
-//	cin >> BlockNum;
+//		int x1, y1, x2, y2, cost;
 //
-//	Blocks = new Block[BlockNum];
-//	BlockPrice = new int[BlockNum];
+//		std::cin >> x1 >> y1 >> x2 >> y2 >> cost;
 //
-//	Vector2 _vec1, _vec2;
+//		area[i] = { {x1, y1}, {x2, y2}, cost };
 //
-//	int _price;
-//	for (int i = 0; i < BlockNum; i++)
-//	{
-//
-//		_vec1 = cinVector2(); _vec2 = cinVector2();
-//
-//		cin >> _price;
-//
-//		Blocks[i] = Block(_vec1, _vec2);
-//		BlockPrice[i] = _price;
+//		xorder.insert(x1), xorder.insert(x2);
+//		yorder.insert(y1), yorder.insert(y2);
 //
 //	}
 //
-//	#pragma endregion
+//	//간선 잇기
 //
-//	int Dir = 0, minScore;
+//	xpos.resize(2002), ypos.resize(2002);
 //
-//	Vector2 back = Vector2();
+//	int size_x = 0, size_y = 0;
 //
-//	while (pos_start != pos_end) {
+//	for (auto itr = xorder.begin(); itr != xorder.end(); itr++) {
 //
-//		int _routeScore = 0;	
-//		minScore = INT32_MAX;
+//		xpos[size_x] = *itr;
+//		xidx[*itr] = size_x++;
 //
-//		for (int i = 0; i < 4; i++) {
+//	}
 //
-//			Vector2 frontVec = Vector2(pos_start.first + normalVector[i].first, pos_start.second + normalVector[i].second);
+//	for (auto itr = yorder.begin(); itr != yorder.end(); itr++) {
 //
-//			if (frontVec.first < 0 || frontVec.second < 0 || frontVec == back) continue;
+//		ypos[size_y] = *itr;
+//		yidx[*itr] = size_y++;
 //
-//			#pragma region Score_h
+//	}
 //
-//			Hueristic_G[i] = distance(frontVec, pos_end);
-//			Hueristic_H[i] = H_Hueristic(frontVec);
+//	//std::cout << "1\n" << size_x << " " << size_y << "\n";
 //
-//			if (Hueristic_G[i] + Hueristic_H[i] < minScore ||
-//				(Hueristic_G[i] + Hueristic_H[i] == minScore && Hueristic_G[i] < Hueristic_G[Dir]))
-//			{
+//	xpos_size = xpos.size(), ypos_size = ypos.size();
 //
-//				_routeScore = Hueristic_H[i];
+//	for (int x = 0; x < size_x; x++)
+//		for (int y = 0; y < size_y; y++)
+//			for (int i = 0; i < 4; i++)
+//				SetNode({ x, y }, i, 10);
 //
-//				Dir = i;
-//				minScore = Hueristic_G[i] + Hueristic_H[i];
+//	for (int i = 0; i < n; i++) {
+//
+//		int start_x = xidx[area[i].pos1.x],
+//			start_y = yidx[area[i].pos1.y];
+//
+//		int end_x = xidx[area[i].pos2.x],
+//			end_y = yidx[area[i].pos2.y];
+//
+//		for (int x = start_x; x < end_x; x++)
+//			for (int y = start_y; y < end_y; y++) {
+//
+//				if (x != start_x) {
+//
+//					SetNode({ x, y }, UP, area[i].cost);
+//					SetNode({ x, y + 1 }, DOWN, area[i].cost);
+//
+//				}
+//
+//				if (y != start_y) {
+//
+//					SetNode({ x, y }, RIGHT, area[i].cost);
+//					SetNode({ x + 1, y }, LEFT, area[i].cost);
+//
+//				}
 //
 //			}
 //
-//			#pragma endregion
+//	}
+//
+//	//std::cout << "2\n";
+//
+//	//A*
+//
+//	std::priority_queue<Vertex, std::vector<Vertex>, comp> q;
+//
+//	vert[xidx[start.x]][yidx[start.y]].num = 0;
+//
+//	q.push(vert[xidx[start.x]][yidx[start.y]]);
+//
+//	while (!q.empty()) {
+//
+//		Vertex v = q.top(); q.pop();
+//
+//		if (visit[v.pos.x][v.pos.y]) continue;
+//
+//		visit[v.pos.x][v.pos.y] = true;
+//
+//		//std::cout << "visit : " << xpos[v.pos.x] << ", " << ypos[v.pos.y] << ", " << v.num << "\n";
+//
+//		for (int i = 0; i < 4; i++) {
+//
+//			Vector2 pos = v.pos + dv[i];
+//
+//			if (v.weight[i] == -1) continue;
+//			if (visit[pos.x][pos.y]) continue;
+//
+//			vert[pos.x][pos.y].num = std::min(vert[pos.x][pos.y].num, v.num + v.weight[i]);
+//
+//			q.push(vert[pos.x][pos.y]);
 //
 //		}
 //
-//		back = pos_start;
-//
-//		pos_start = Vector2(pos_start.first + normalVector[Dir].first, pos_start.second + normalVector[Dir].second);
-//
-//		route += _routeScore;
-//
 //	}
 //
-//	cout << route << endl;
+//	std::cout << vert[xidx[end.x]][yidx[end.y]].num << "\n";
 //
 //	return 0;
-//
-//}
-//
-//__inline Vector2 cinVector2()
-//{
-//
-//	int _x, _y;
-//	cin >> _x >> _y;
-//
-//	return Vector2(_x, _y);
-//
-//}
-//
-//__inline int H_Hueristic(Vector2 _vec1)
-//{
-//
-//	int h = 10;
-//
-//	for (int i = 0; i < BlockNum; i++) {
-//
-//
-//		if (inBlock(Blocks[i], pos_start, _vec1)) {
-//
-//			h = BlockPrice[i];
-//			break;
-//
-//		}
-//
-//	}
-//
-//	return h;
 //
 //}
